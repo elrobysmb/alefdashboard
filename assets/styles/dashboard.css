@@ -2018,3 +2018,131 @@ html.dark body {
   justify-content: center;
   height: 100%;
 }
+
+/* --- LOGIN PAGE STYLES --- */
+.login-container {
+  min-height: 100vh;
+  background-color: #050505;
+  /* Black/Dark background */
+  font-family: 'Outfit', sans-serif;
+  overflow: hidden;
+  display: flex;
+}
+
+.login-content {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+}
+
+.login-left {
+  width: 50%;
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #050505;
+  color: white;
+}
+
+.login-right {
+  width: 50%;
+  height: 100%;
+  background-color: #000;
+  position: relative;
+}
+
+.login-form-wrapper {
+  width: 100%;
+  max-width: 480px;
+  /* Increased to fit card */
+  /* padding removed from here, moved to card */
+}
+
+/* New Glass Card Style */
+.login-card {
+  background: rgba(15, 23, 42, 0.6);
+  /* Darker slate/blue bg */
+  border: 1px solid #334155;
+  /* Blue-grey border (slate-700) */
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+/* --- FONTS --- */
+@font-face {
+  font-family: 'Type Machine';
+  src: url('../fonts/TypeMachine.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.brand-header {
+  display: flex;
+  justify-content: center;
+  /* Center logo/title */
+  margin-bottom: 2rem !important;
+  /* Move it up relative to form */
+}
+
+.brand-title {
+  font-family: 'Type Machine', sans-serif;
+  font-weight: 400;
+  /* Type Machine usually doesn't need bold */
+  letter-spacing: 2px;
+  font-size: 2.25rem;
+  /* Adjusted for this font */
+  color: #f1f5f9;
+  /* Slate-100 */
+}
+
+.custom-input .v-field__outline__start,
+.custom-input .v-field__outline__end,
+.custom-input .v-field__outline__notch {
+  border-color: #334155 !important;
+  /* Blue-grey border */
+  opacity: 0.8;
+}
+
+.custom-input.v-input--focused .v-field__outline__start,
+.custom-input.v-input--focused .v-field__outline__end,
+.custom-input.v-input--focused .v-field__outline__notch {
+  border-color: #38bdf8 !important;
+  /* Light blue/sky on focus */
+  opacity: 1;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.custom-input input {
+  color: #fff !important;
+}
+
+.custom-input input::placeholder {
+  color: #64748b !important;
+}
+
+.neon-btn {
+  background: transparent !important;
+  border: 1px solid #38bdf8;
+  /* Sky-400 (Blueish-Grey hint) */
+  color: #fff !important;
+  border-radius: 50px !important;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+  /* Reduced glow */
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+  font-weight: 600;
+}
+
+.neon-btn:hover {
+  background: rgba(56, 189, 248, 0.1) !important;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+  transform: translateY(-1px);
+}
+
+.brain-visual {
+  width: 100%;
+  height: 100%;
+}

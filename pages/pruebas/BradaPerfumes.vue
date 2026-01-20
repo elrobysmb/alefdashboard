@@ -142,7 +142,7 @@
           <h1>Dashboard</h1>
           <button class="btn-primary" @click="fetchContribuyentes">
             <v-icon icon="mdi-refresh" size="16" />
-            <span>Refresh Data</span>
+            <span>Actualizar</span>
           </button>
         </header>
 
@@ -170,8 +170,8 @@
           <div class="chart-section">
             <div class="chart-header">
               <div class="chart-title-section">
-                <h2>Total Visitors</h2>
-                <div class="chart-subtitle">Total for the last 3 months</div>
+                <h2>Leads Totales</h2>
+                <div class="chart-subtitle">Resumen de prospectos</div>
               </div>
               <div class="time-filters">
                 <button v-for="btn in zoomButtons" :key="btn.id"
@@ -193,43 +193,57 @@
               <button v-for="tab in tabs" :key="tab.value" :class="['tab', { active: activeTab === tab.value }]"
                 @click="activeTab = tab.value">
                 {{ tab.label }}
-                <span v-if="tab.badge" class="badge">{{ tab.badge }}</span>
+                <!-- <span v-if="tab.badge" class="badge">{{ tab.badge }}</span> -->
               </button>
-              <div class="spacer" />
-              <button class="tab-action">
-                <v-icon icon="mdi-view-column" size="16" />
-                Customize Columns
-              </button>
-              <button class="tab-action primary" @click="fetchContribuyentes">
-                <v-icon icon="mdi-plus" size="16" />
-                Add Section
-              </button>
+              <!-- Buttons removed as requested -->
             </div>
             <v-card flat class="custom-data-table">
-              <v-card-title class="table-search-bar">
-                <span class="table-title">Pacientes</span>
-                <v-spacer></v-spacer>
-                <v-text-field v-model="search" append-inner-icon="mdi-magnify" label="Search" single-line hide-details
-                  density="compact" variant="outlined" class="search-field"></v-text-field>
-              </v-card-title>
-              <v-data-table :headers="headers" :items="contribuyentes" :search="search" :loading="loading"
-                :items-per-page="10" class="elevation-0" loading-text="Cargando datos de Supabase..."
-                no-data-text="No hay datos disponibles">
-                <template v-slot:item.estado="{ item }">
-                  <span :class="['status', item.estado === 'Activo' ? 'done' : 'in-process']">
-                    <span class="status-dot" />
-                    {{ item.estado }}
-                  </span>
-                </template>
-                <template v-slot:item.actions="{ item }">
-                  <button class="icon-btn" @click="editItem(item)">
-                    <v-icon icon="mdi-pencil" size="16" />
-                  </button>
-                  <button class="icon-btn" @click="deleteItem(item)">
-                    <v-icon icon="mdi-delete" size="16" />
-                  </button>
-                </template>
-              </v-data-table>
+
+              <!-- TABLE: COMPRAS (Was Outline) -->
+              <div v-if="activeTab === 'compras'">
+                <v-card-title class="table-search-bar">
+                  <span class="table-title">Últimas Compras</span>
+                </v-card-title>
+                <v-data-table :headers="headersComprasDashboard" :items="compras.slice(0, 10)" class="elevation-0"
+                  no-data-text="No hay compras recientes" :items-per-page="10">
+                  <template v-slot:bottom></template> <!-- Hide footer if desired -->
+                </v-data-table>
+              </div>
+
+              <!-- TABLE: LEADS (Was Past Performance) -->
+              <div v-if="activeTab === 'leads'">
+                <v-card-title class="table-search-bar">
+                  <span class="table-title">Recientes Leads</span>
+                </v-card-title>
+                <v-data-table :headers="headersLeads" :items="leads.slice(0, 10)" class="elevation-0"
+                  no-data-text="No hay leads recientes" :items-per-page="10">
+                  <template v-slot:item.lead_status="{ item }">
+                    <v-chip
+                      :color="item.lead_status?.toLowerCase().includes('caliente') ? 'error' : item.lead_status?.toLowerCase().includes('tibio') ? 'warning' : 'info'"
+                      size="small">
+                      {{ item.lead_status }}
+                    </v-chip>
+                  </template>
+                  <template v-slot:bottom></template>
+                </v-data-table>
+              </div>
+
+              <!-- TABLE: EVENTS (Upcoming) -->
+              <div v-if="activeTab === 'events'">
+                <v-card-title class="table-search-bar">
+                  <span class="table-title">Próximos Eventos</span>
+                </v-card-title>
+                <v-data-table :headers="headersUpcomingEvents" :items="upcomingEvents" class="elevation-0"
+                  no-data-text="No hay eventos próximos">
+                  <template v-slot:item.date="{ item }">
+                    {{ formatEventDate(item.date) }}
+                  </template>
+                  <template v-slot:item.clientName="{ item }">
+                    {{ item.clientName }} {{ item.clientSurname }}
+                  </template>
+                </v-data-table>
+              </div>
+
             </v-card>
           </div>
         </div>
@@ -1472,7 +1486,7 @@ const deleteItem = async (item: any) => {
 
 /* ---------------- Estado General ---------------- */
 const activeView = ref('dashboard')
-const activeTab = ref('outline')
+const activeTab = ref('compras')
 const showUserMenu = ref(false)
 const stockMenuOpen = ref(false)
 
@@ -2109,7 +2123,8 @@ onMounted(() => {
   applyTheme()
   fetchContribuyentes()
   fetchCompras()
-  handleZoom('one_month')
+  fetchLeads()
+  handleZoom('Mes')
   loadEventsFromLocalStorage()
   loadProceduresFromLocalStorage()
   loadMedicalHistoryFromLocalStorage()
@@ -2204,129 +2219,212 @@ const navigateToChat = (url: string) => {
 }
 
 /* ---------------- Stats ---------------- */
-const stats: Stat[] = [
+/* ---------------- Stats Reales ---------------- */
+const totalRevenue = computed(() => {
+  return revenueCurrentMonth.value // Ya calculado en la sección de facturación
+})
+
+const totalLeadsCount = computed(() => {
+  return leads.value.length
+})
+
+const totalComprasCount = computed(() => {
+  return compras.value.length
+})
+
+// Subida de Leads (Mes actual vs Mes anterior)
+const leadsGrowthStat = computed(() => {
+  const current = leadsMesActual.value.length
+  const previous = leadsMesAnterior.value.length
+
+  if (previous === 0) return current > 0 ? 100 : 0
+  return ((current - previous) / previous) * 100
+})
+
+const stats = computed<Stat[]>(() => [
   {
-    title: 'Total Revenue',
-    value: '$1,250.00',
-    change: '+12.5%',
-    trend: 'up',
-    subtitle: 'Trending up this month',
-    description: 'Visitors for the last 6 months'
+    title: 'Ganancia Total',
+    value: `S/ ${totalRevenue.value.toLocaleString('es-PE', { minimumFractionDigits: 2 })}`,
+    change: `${revenueGrowth.value >= 0 ? '+' : ''}${revenueGrowth.value.toFixed(1)}%`,
+    trend: revenueGrowth.value >= 0 ? 'up' : 'down',
+    subtitle: 'vs mes anterior',
+    description: 'Ingresos totales del mes actual'
   },
   {
-    title: 'New Customers',
-    value: '1,234',
-    change: '-20%',
-    trend: 'down',
-    subtitle: 'Down 20% this period',
-    description: 'Acquisition needs attention'
+    title: 'Total Leads',
+    value: totalLeadsCount.value.toLocaleString(),
+    change: `${leadsGrowthStat.value >= 0 ? '+' : ''}${leadsGrowthStat.value.toFixed(1)}%`,
+    trend: leadsGrowthStat.value >= 0 ? 'up' : 'down',
+    subtitle: 'vs mes anterior',
+    description: 'Total acumulado'
   },
   {
-    title: 'Active Accounts',
-    value: '45,678',
-    change: '+12.5%',
+    title: 'Total Compras',
+    value: totalComprasCount.value.toLocaleString(),
+    change: '', // Podríamos calcular crecimiento de compras total si quisieramos, o dejarlo vacío
     trend: 'up',
-    subtitle: 'Strong user retention',
-    description: 'Engagement exceed targets'
+    subtitle: 'Histórico',
+    description: 'Pedidos procesados exitosamente'
   },
   {
-    title: 'Growth Rate',
-    value: '4.5%',
-    change: '+4.5%',
-    trend: 'up',
-    subtitle: 'Steady performance increase',
-    description: 'Meets growth projections'
+    title: 'Subida de Leads',
+    value: `${leadsGrowthStat.value.toFixed(1)}%`,
+    change: leadsGrowthStat.value >= 0 ? 'Subiendo' : 'Bajando',
+    trend: leadsGrowthStat.value >= 0 ? 'up' : 'down',
+    subtitle: 'Crecimiento mensual',
+    description: 'Comparativa con el mes pasado'
   }
-]
+])
 
 /* ---------------- Tabs ---------------- */
+/* ---------------- Tabs ---------------- */
 const tabs: Tab[] = [
-  { label: 'Outline', value: 'outline' },
-  { label: 'Past Performance', value: 'performance', badge: '3' },
-  { label: 'Key Personnel', value: 'personnel', badge: '2' },
-  { label: 'Focus Documents', value: 'focus' }
+  { label: 'Compras', value: 'compras' },
+  { label: 'Leads', value: 'leads' },
+  { label: 'Próximos Eventos', value: 'events' }
+]
+
+/* ---------------- Table Headers for Dashboard ---------------- */
+// Compras: First 10 cols, no actions
+const headersComprasDashboard = computed(() => {
+  return headersCompras.value.slice(0, 10)
+})
+
+const headersUpcomingEvents = [
+  { title: 'Fecha', key: 'date', sortable: true },
+  { title: 'Hora', key: 'time', sortable: true },
+  { title: 'Asunto', key: 'subject', sortable: true },
+  { title: 'Cliente', key: 'clientName', sortable: true },
 ]
 
 /* ---------------- ApexCharts Data ---------------- */
-const fullData: [number, number][] = [
-  [1358982000000, 38.10],
-  [1359068400000, 38.32],
-  [1359327600000, 38.24],
-  [1359414000000, 38.52],
-  [1359500400000, 37.94],
-  [1359586800000, 37.83],
-  [1359673200000, 38.34],
-  [1359932400000, 38.10],
-  [1360018800000, 38.51],
-  [1360105200000, 38.40],
-  [1360191600000, 38.07],
-  [1360278000000, 39.12],
-  [1360537200000, 38.64],
-  [1360623600000, 38.89],
-  [1360710000000, 38.81],
-  [1360796400000, 38.61],
-  [1360882800000, 38.63],
-  [1361228400000, 38.99],
-  [1361314800000, 38.77],
-  [1361401200000, 38.34],
-  [1361487600000, 38.55],
-  [1361746800000, 38.11],
-  [1361833200000, 38.59],
-  [1361919600000, 39.60]]
+/* ---------------- ApexCharts Data (LEADS TOTALES) ---------------- */
+const activeZoom = ref('Mes') // 'Hoy', 'Semana', 'Mes', 'Año'
 
-const ranges: Record<string, [number, number]> = {
-  one_month: [Date.UTC(2013, 1, 1), Date.UTC(2013, 1, 27)],
-  six_months: [Date.UTC(2012, 8, 27), Date.UTC(2013, 1, 27)],
-  one_year: [Date.UTC(2012, 1, 27), Date.UTC(2013, 1, 27)],
-  ytd: [Date.UTC(2013, 0, 1), Date.UTC(2013, 1, 27)],
-  all: [fullData[0][0], fullData.at(-1)![0]]
+const zoomButtons = [
+  { id: 'Hoy', label: 'Hoy' },
+  { id: 'Semana', label: 'Semana' },
+  { id: 'Mes', label: 'Mes' },
+  { id: 'Año', label: 'Año' }
+]
+
+function handleZoom(filter: string) {
+  activeZoom.value = filter
 }
 
-const series = ref([{ name: 'Visitors', data: fullData }])
-const chartEl = ref<any>(null)
+const filteredLeadsForChart = computed(() => {
+  const now = new Date()
+  const dataMap = new Map<number, number>()
+  let startTime = 0
+  let endTime = now.getTime()
+
+  // Configurar rangos
+  if (activeZoom.value === 'Hoy') {
+    const startOfDay = new Date(now.setHours(0, 0, 0, 0))
+    startTime = startOfDay.getTime()
+  } else if (activeZoom.value === 'Semana') {
+    const startOfWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    startTime = startOfWeek.getTime()
+  } else if (activeZoom.value === 'Mes') {
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    startTime = startOfMonth.getTime()
+  } else if (activeZoom.value === 'Año') {
+    const startOfYear = new Date(now.getFullYear(), 0, 1)
+    startTime = startOfYear.getTime()
+  }
+
+  // Filtrar y agrupar leads
+  leads.value.forEach(l => {
+    if (!l.created_at) return
+    const d = new Date(l.created_at)
+    const ts = d.getTime()
+
+    if (ts >= startTime && ts <= endTime) {
+      // Agrupar según el filtro
+      let key = 0
+      if (activeZoom.value === 'Hoy') {
+        // Agrupar por hora
+        d.setMinutes(0, 0, 0)
+        key = d.getTime()
+      } else if (activeZoom.value === 'Año') {
+        // Agrupar por mes (primer día del mes)
+        d.setDate(1)
+        d.setHours(0, 0, 0, 0)
+        key = d.getTime()
+      } else {
+        // Agrupar por día (Semana o Mes)
+        d.setHours(0, 0, 0, 0)
+        key = d.getTime()
+      }
+
+      dataMap.set(key, (dataMap.get(key) || 0) + 1)
+    }
+  })
+
+  // Convertir Map a Array ordenado [timestamp, count]
+  // Llenar huecos si es necesario? Para simplificar, devolvemos los puntos existentes. 
+  // ApexCharts maneja time series bien, pero si queremos líneas continuas bonitas, podríamos llenar con 0.
+  // Vamos a devolver data points ordenados.
+  const sortedData = Array.from(dataMap.entries()).sort((a, b) => a[0] - b[0])
+  return sortedData
+})
+
+const series = computed(() => {
+  return [{
+    name: 'Leads',
+    data: filteredLeadsForChart.value
+  }]
+})
 
 const chartOptions = computed<ApexOptions>(() => ({
   chart: {
-    id: 'area-datetime',
+    id: 'leads-chart',
     type: 'area',
-    zoom: { autoScaleYaxis: true },
     background: 'transparent',
-    foreColor: getComputedStyle(document.documentElement)
-      .getPropertyValue('--foreground')
-      .trim()
+    zoom: { enabled: false },
+    toolbar: { show: false },
+    foreColor: isDark.value ? '#a1a1aa' : '#3f3f46'
   },
-  colors: ['var(--chart-3)'],
+  colors: ['#3b82f6'],
   fill: {
     type: 'gradient',
     gradient: {
       shadeIntensity: 1,
       opacityFrom: 0.7,
-      opacityTo: 0.05,
-      stops: [0, 100]
+      opacityTo: 0.1,
+      stops: [0, 90, 100]
     }
   },
-  grid: { borderColor: 'var(--border)', strokeDashArray: 4 },
   dataLabels: { enabled: false },
-  xaxis: { type: 'datetime' },
+  stroke: { curve: 'smooth', width: 2 },
+  xaxis: {
+    type: 'datetime',
+    tooltip: { enabled: false },
+    axisBorder: { show: false },
+    axisTicks: { show: false },
+    labels: {
+      datetimeFormatter: {
+        year: 'yyyy',
+        month: "MMM 'yy",
+        day: 'dd MMM',
+        hour: 'HH:mm'
+      }
+    }
+  },
+  yaxis: {
+    labels: {
+      formatter: (val) => val.toFixed(0)
+    }
+  },
+  grid: { borderColor: isDark.value ? '#3f3f46' : '#e5e7eb', strokeDashArray: 4 },
+  tooltip: {
+    theme: isDark.value ? 'dark' : 'light',
+    x: {
+      format: activeZoom.value === 'Hoy' ? 'dd MMM HH:mm' : 'dd MMM yyyy'
+    }
+  },
   theme: { mode: isDark.value ? 'dark' : 'light' }
 }))
-
-const activeZoom = ref<keyof typeof ranges>('one_month')
-
-function handleZoom(btnId: keyof typeof ranges) {
-  activeZoom.value = btnId
-  const [start, end] = ranges[btnId]
-  series.value[0].data = fullData.filter(([ts]) => ts >= start && ts <= end)
-  nextTick(() => chartEl.value?.zoomX(start, end))
-}
-
-const zoomButtons = [
-  { id: 'one_month', label: '1M' },
-  { id: 'six_months', label: '6M' },
-  { id: 'one_year', label: '1Y' },
-  { id: 'ytd', label: 'YTD' },
-  { id: 'all', label: 'ALL' }
-]
 
 /* ---------------- Calendar Types & Interfaces ---------------- */
 interface CalendarEvent {
