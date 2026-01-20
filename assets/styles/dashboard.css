@@ -375,6 +375,31 @@ html.dark body {
   height: 16px;
 }
 
+.btn-warning {
+  background: #ffc107;
+  color: #000000;
+  border: none;
+  padding: 0.4375rem 0.875rem;
+  border-radius: calc(var(--radius) - 2px);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.btn-warning:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-warning svg {
+  width: 16px;
+  height: 16px;
+}
+
 .content-area {
   flex: 1;
   overflow-y: auto;
@@ -1950,6 +1975,46 @@ html.dark body {
   color: var(--foreground);
 }
 
-.discount-preview .amount.discount {
-  color: #059669;
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ============================================================ */
+/* NEW STATS STYLES */
+/* ============================================================ */
+
+.stats-grid.two-columns {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.stats-grid.five-columns {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.stat-change {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.stat-change.up {
+  color: #10b981;
+  /* Green */
+}
+
+.stat-change.down {
+  color: #ef4444;
+}
+
+.stat-card.center-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }

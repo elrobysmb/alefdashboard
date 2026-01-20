@@ -5,7 +5,7 @@
       <div class="sidebar-header">
         <div class="logo" style="gap: 0.5rem;">
           <div style="width: 35px; height: 35px; border-radius: 50%; overflow: hidden; flex-shrink: 0;">
-            <v-img src="@/assets/img/healupLOGO.png" alt="Alef Company Logo" style="width: 100%; height: 100%;" />
+            <v-img src="@/assets/img/bradalogo.jpg" alt="Alef Company Logo" style="width: 100%; height: 100%;" />
           </div>
           <span class="logo-text">Brada Perfumes</span>
         </div>
@@ -16,6 +16,14 @@
           <div class="nav-label">Inicio</div>
           <button v-for="item in menuItems" :key="item.id" :class="['nav-item', { active: activeView === item.id }]"
             @click="activeView = item.id">
+            <v-icon :icon="item.icon" size="18" />
+            <span>{{ item.label }}</span>
+          </button>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-label">Chats</div>
+          <button v-for="item in chatsItems" :key="item.id" class="nav-item" @click="navigateToChat(item.url)">
             <v-icon :icon="item.icon" size="18" />
             <span>{{ item.label }}</span>
           </button>
@@ -54,7 +62,11 @@
               </div>
             </div>
           </div>
+
+
         </div>
+
+
       </nav>
 
       <div class="sidebar-footer">
@@ -62,10 +74,11 @@
           <v-icon icon="mdi-cog" size="18" />
           <span>Settings</span>
         </button>
-        <button class="footer-item">
+        <a href="https://wa.me/51936196001?text=Hola%20necesito%20soporte" target="_blank" class="footer-item"
+          style="text-decoration: none; color: inherit;">
           <v-icon icon="mdi-help-circle" size="18" />
-          <span>Get Help</span>
-        </button>
+          <span>Contacta con Alef</span>
+        </a>
         <button class="footer-item">
           <v-icon icon="mdi-magnify" size="18" />
           <span>Search</span>
@@ -97,22 +110,18 @@
                 </v-avatar>
               </template>
 
-              <v-list-item-title>Roberto</v-list-item-title>
-              <v-list-item-subtitle>robertoaceresrivas@hotmail.com</v-list-item-subtitle>
+              <v-list-item-title>{{ currentUser.full_name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
             </v-list-item>
 
             <v-divider />
 
-            <v-list-item to="/account" prepend-icon="mdi-account">
-              <v-list-item-title>Account</v-list-item-title>
+            <v-list-item @click="activeView = 'cuenta'" prepend-icon="mdi-account">
+              <v-list-item-title>Cuenta</v-list-item-title>
             </v-list-item>
 
-            <v-list-item to="/billing" prepend-icon="mdi-credit-card">
-              <v-list-item-title>Billing</v-list-item-title>
-            </v-list-item>
-
-            <v-list-item to="/notifications" prepend-icon="mdi-bell">
-              <v-list-item-title>Notifications</v-list-item-title>
+            <v-list-item @click="activeView = 'notificaciones'" prepend-icon="mdi-bell">
+              <v-list-item-title>Notificaciones</v-list-item-title>
             </v-list-item>
 
             <v-divider />
@@ -272,7 +281,7 @@
                 <span class="day-number">{{ day.day }}</span>
                 <div v-if="day.events.length > 0" class="event-list-in-day">
                   <div v-for="(event, eventIndex) in day.events.slice(0, 2)" :key="eventIndex" class="event-line"
-                    :style="{ backgroundColor: getProcedureColor(event.procedureId) }" :title="event.subject">
+                    :style="{ backgroundColor: event.color || '#3b82f6' }" :title="event.subject">
                     <span class="event-line-text">{{ event.subject }}</span>
                   </div>
                   <span v-if="day.events.length > 2" class="more-events">+{{ day.events.length - 2 }} más</span>
@@ -290,7 +299,7 @@
             </div>
             <div v-else class="event-list">
               <div v-for="event in upcomingEvents" :key="event.id" class="event-item" @click="openEventDetail(event)">
-                <div class="event-color-bar" :style="{ backgroundColor: getProcedureColor(event.procedureId) }"></div>
+                <div class="event-color-bar" :style="{ backgroundColor: event.color || '#3b82f6' }"></div>
                 <div class="event-info">
                   <div class="event-title">{{ event.subject }}</div>
                   <div class="event-meta">
@@ -305,61 +314,46 @@
         </div>
       </div>
 
-      <!-- ==========  VISTA: PACIENTES  ========== -->
-      <div v-else-if="activeView === 'pacientes'" class="view-container">
+      <!-- ==========  VISTA: COMPRAS (antes Pacientes)  ========== -->
+      <div v-else-if="activeView === 'compras'" class="view-container">
         <header class="top-header">
-          <h1>Pacientes</h1>
+          <h1>Compras</h1>
           <button class="btn-primary">
-            <v-icon icon="mdi-account-plus" size="16" />
-            <span>Nuevo Paciente</span>
+            <v-icon icon="mdi-cart-plus" size="16" />
+            <span>Nueva Compra</span>
           </button>
         </header>
 
         <div class="content-area">
-          <div class="stats-grid mini">
-            <div class="stat-card">
-              <div class="stat-value">1,234</div>
-              <div class="stat-title">Total Pacientes</div>
+          <div class="stats-grid mini two-columns">
+            <div class="stat-card center-content">
+              <div class="stat-value">{{ compras.length }}</div>
+              <div class="stat-title">Total Histórico</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">89</div>
-              <div class="stat-title">Nuevos (Mes)</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">456</div>
-              <div class="stat-title">Activos</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-value">23</div>
-              <div class="stat-title">Consultas Hoy</div>
-            </div>
-          </div>
-
-          <div class="two-column-grid">
-            <div class="placeholder-card chart">
-              <h3>Estadísticas de Pacientes</h3>
-              <div class="placeholder-chart">
-                <v-icon icon="mdi-chart-line" size="48" />
-                <p>Gráfica de tendencias de pacientes</p>
-              </div>
-            </div>
-
-            <div class="placeholder-card chart">
-              <h3>Distribución por Edad</h3>
-              <div class="placeholder-chart">
-                <v-icon icon="mdi-chart-bar" size="48" />
-                <p>Gráfica de distribución demográfica</p>
+              <div class="stat-value">{{ comprasMesActual.length }}</div>
+              <div class="stat-title">Compras este Mes</div>
+              <div class="stat-change" :class="growthPercentage >= 0 ? 'up' : 'down'">
+                {{ growthPercentage >= 0 ? '+' : '' }}{{ growthPercentage.toFixed(1) }}% vs mes anterior
               </div>
             </div>
           </div>
 
           <div class="table-section">
-            <div class="placeholder-card">
-              <h3>Lista de Pacientes</h3>
-              <div class="placeholder-table">
-                <p>Tabla de pacientes con filtros y búsqueda</p>
-              </div>
-            </div>
+            <v-card flat class="custom-data-table">
+              <v-card-title class="table-search-bar">
+                <span class="table-title">Lista de Compras</span>
+                <v-spacer></v-spacer>
+                <v-text-field v-model="search" append-inner-icon="mdi-magnify" label="Buscar" single-line hide-details
+                  density="compact" variant="outlined" class="search-field"></v-text-field>
+              </v-card-title>
+              <v-data-table :headers="headersCompras" :items="compras" :search="search" :loading="loading"
+                class="elevation-0" no-data-text="No hay ordenes de compra">
+                <template v-slot:item.created_at="{ item }">
+                  {{ new Date(item.created_at).toLocaleDateString() }}
+                </template>
+              </v-data-table>
+            </v-card>
           </div>
         </div>
       </div>
@@ -425,51 +419,79 @@
       <div v-else-if="activeView === 'leads'" class="view-container">
         <header class="top-header">
           <h1>Leads</h1>
-          <button class="btn-primary">
-            <v-icon icon="mdi-account-plus" size="16" />
-            <span>Nuevo Lead</span>
-          </button>
+          <div class="d-flex align-center" style="gap: 10px">
+            <button class="btn-primary">
+              <v-icon icon="mdi-account-plus" size="16" />
+              <span>Nuevo Lead</span>
+            </button>
+            <button class="btn-primary" @click="fetchLeads">
+              <v-icon icon="mdi-refresh" size="16" />
+              <span>Actualizar</span>
+            </button>
+          </div>
         </header>
 
         <div class="content-area">
-          <div class="stats-grid">
+          <div class="stats-grid five-columns">
             <div class="stat-card">
-              <div class="stat-value">245</div>
+              <div class="stat-value">{{ totalLeads }}</div>
               <div class="stat-title">Total Leads</div>
-              <div class="stat-change up">+12.5%</div>
+              <div class="stat-change" :class="leadsGrowthPercentage >= 0 ? 'up' : 'down'">
+                {{ leadsGrowthPercentage >= 0 ? '+' : '' }}{{ leadsGrowthPercentage.toFixed(1) }}% this month
+              </div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">36</div>
-              <div class="stat-title">Calificados</div>
-              <div class="stat-change up">+8.3%</div>
+              <div class="stat-value">{{ coldLeadsCount }}</div>
+              <div class="stat-title">Leads Fríos</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">12</div>
-              <div class="stat-title">Convertidos</div>
-              <div class="stat-change down">-3.2%</div>
+              <div class="stat-value">{{ warmLeadsCount }}</div>
+              <div class="stat-title">Leads Tibios</div>
             </div>
             <div class="stat-card">
-              <div class="stat-value">4.9%</div>
+              <div class="stat-value">{{ hotLeadsCount }}</div>
+              <div class="stat-title">Leads Calientes</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">{{ conversionRate.toFixed(1) }}%</div>
               <div class="stat-title">Tasa Conversión</div>
-              <div class="stat-change up">+0.5%</div>
-            </div>
-          </div>
-
-          <div class="placeholder-card large">
-            <h2>Embudo de Ventas</h2>
-            <div class="placeholder-chart funnel">
-              <v-icon icon="mdi-chart-timeline-variant" size="64" />
-              <p>Gráfica de embudo de conversión de leads</p>
+              <div class="stat-change up">
+                (Calientes/Total)
+              </div>
             </div>
           </div>
 
           <div class="table-section">
-            <div class="placeholder-card">
-              <h3>Lista de Leads</h3>
-              <div class="placeholder-table">
-                <p>Tabla de leads con estado, fuente, y acciones</p>
-              </div>
-            </div>
+            <v-card flat class="custom-data-table">
+              <v-card-title class="table-search-bar">
+                <span class="table-title">Lista de Leads</span>
+                <v-spacer></v-spacer>
+                <v-text-field v-model="leadsSearch" append-inner-icon="mdi-magnify" label="Buscar" single-line
+                  hide-details density="compact" variant="outlined" class="search-field"></v-text-field>
+              </v-card-title>
+              <v-data-table :headers="headersLeads" :items="leads" :search="leadsSearch" :loading="loadingLeads"
+                class="elevation-0" no-data-text="No hay leads registrados">
+                <template v-slot:item.lead_status="{ item }">
+                  <v-chip
+                    :color="item.lead_status?.toLowerCase().includes('caliente') ? 'error' : item.lead_status?.toLowerCase().includes('tibio') ? 'warning' : 'info'"
+                    size="small">
+                    {{ item.lead_status }}
+                  </v-chip>
+                </template>
+              </v-data-table>
+            </v-card>
+          </div>
+
+          <div class="mt-4">
+            <v-card flat class="custom-data-table pa-4">
+              <h3>Comparativa de Leads</h3>
+              <client-only>
+                <div id="chart">
+                  <apexchart type="bar" height="350" :options="leadsChartOptions" :series="leadsChartSeries">
+                  </apexchart>
+                </div>
+              </client-only>
+            </v-card>
           </div>
         </div>
       </div>
@@ -478,62 +500,110 @@
       <div v-else-if="activeView === 'facturacion'" class="view-container">
         <header class="top-header">
           <h1>Facturación</h1>
-          <button class="btn-primary">
-            <v-icon icon="mdi-file-document-plus" size="16" />
-            <span>Nueva Factura</span>
-          </button>
+          <div class="header-actions">
+            <button class="btn-primary" @click="fetchCompras">
+              <v-icon icon="mdi-refresh" size="16" />
+              <span>Actualizar Datos</span>
+            </button>
+          </div>
         </header>
 
         <div class="content-area">
+          <!-- KPI Stats Grid -->
           <div class="stats-grid">
             <div class="stat-card">
-              <div class="stat-title">Ingresos del Mes</div>
-              <div class="stat-value">$45,678</div>
-              <div class="stat-change up">+15.3%</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-title">Facturas Emitidas</div>
-              <div class="stat-value">127</div>
-              <div class="stat-change up">+8%</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-title">Pendientes de Pago</div>
-              <div class="stat-value">$12,340</div>
-              <div class="stat-change down">-5%</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-title">Tasa de Cobro</div>
-              <div class="stat-value">94.5%</div>
-              <div class="stat-change up">+2.1%</div>
-            </div>
-          </div>
-
-          <div class="two-column-grid">
-            <div class="placeholder-card chart">
-              <h3>Ingresos vs Egresos</h3>
-              <div class="placeholder-chart">
-                <v-icon icon="mdi-chart-line" size="48" />
-                <p>Gráfica comparativa de ingresos y egresos</p>
+              <div class="stat-title">Ingresos (Mes Actual)</div>
+              <div class="stat-value">S/ {{ revenueCurrentMonth.toLocaleString('es-PE', { minimumFractionDigits: 2 }) }}
+              </div>
+              <div :class="['stat-change', revenueGrowth >= 0 ? 'up' : 'down']">
+                <v-icon :icon="revenueGrowth >= 0 ? 'mdi-trending-up' : 'mdi-trending-down'" size="12" />
+                {{ Math.abs(revenueGrowth).toFixed(1) }}% vs mes anterior
               </div>
             </div>
 
-            <div class="placeholder-card chart">
-              <h3>Estado de Facturas</h3>
-              <div class="placeholder-chart">
-                <v-icon icon="mdi-chart-pie" size="48" />
-                <p>Gráfica de distribución de facturas por estado</p>
+            <div class="stat-card">
+              <div class="stat-title">Ventas (Cantidad)</div>
+              <div class="stat-value">{{ salesCountCurrentMonth }}</div>
+              <div :class="['stat-change', salesGrowth >= 0 ? 'up' : 'down']">
+                <v-icon :icon="salesGrowth >= 0 ? 'mdi-trending-up' : 'mdi-trending-down'" size="12" />
+                {{ Math.abs(salesGrowth).toFixed(1) }}%
               </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-title">Ticket Promedio (AOV)</div>
+              <div class="stat-value">S/ {{ averageOrderValue.toLocaleString('es-PE', { minimumFractionDigits: 2 }) }}
+              </div>
+              <div class="stat-subtitle">Promedio por venta este mes</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-title">Tasa de Conversión Real</div>
+              <div class="stat-value">{{ realConversionRate.toFixed(1) }}%</div>
+              <div class="stat-subtitle">{{ convertedLeadsCountReal }} de {{ leads.length }} Leads han comprado</div>
             </div>
           </div>
 
-          <div class="table-section">
-            <div class="placeholder-card">
-              <h3>Facturas Recientes</h3>
-              <div class="placeholder-table">
-                <p>Tabla de facturas con fecha, cliente, monto y estado</p>
+          <!-- Charts Grid -->
+          <div class="two-column-grid" style="grid-template-columns: 2fr 1fr;">
+            <!-- Give more space to Revenue chart -->
+            <div class="chart-section" style="height: auto;">
+              <div class="chart-header">
+                <h2>Tendencia de Facturación (Diaria)</h2>
               </div>
+              <client-only>
+                <apexchart type="area" height="350" :options="revenueChartOptions" :series="revenueChartSeries" />
+              </client-only>
+            </div>
+
+            <div class="chart-section" style="height: auto;">
+              <div class="chart-header">
+                <h2>Leads vs Compradores</h2>
+              </div>
+              <client-only>
+                <apexchart type="donut" height="350" :options="conversionChartOptions"
+                  :series="conversionChartSeries" />
+              </client-only>
             </div>
           </div>
+
+          <!-- Additional Row -->
+          <div class="two-column-grid mt-4">
+            <div class="chart-section" style="height: auto;">
+              <div class="chart-header">
+                <h2>Ventas por Categoría (Total)</h2>
+              </div>
+              <client-only>
+                <apexchart type="bar" height="350" :options="categoryChartOptions" :series="salesByCategorySeries" />
+              </client-only>
+            </div>
+            <div class="table-section" style="height: auto; max-height: 480px; overflow-y: auto;">
+              <div class="chart-header mb-2">
+                <h2>Últimas Compras</h2>
+              </div>
+              <v-list density="compact">
+                <v-list-item v-for="compra in comprasMesActual.slice(0, 6)" :key="compra.id" lines="two"
+                  style="border-bottom: 1px solid var(--border);">
+                  <template v-slot:prepend>
+                    <v-avatar color="primary" variant="tonal" size="36">
+                      <v-icon icon="mdi-cart" size="18"></v-icon>
+                    </v-avatar>
+                  </template>
+                  <v-list-item-title class="font-weight-bold">{{ compra.nombre }} {{ compra.apellidos
+                  }}</v-list-item-title>
+                  <v-list-item-subtitle>{{ compra.productos_comprados }}</v-list-item-subtitle>
+                  <template v-slot:append>
+                    <div class="text-right">
+                      <div class="font-weight-bold text-primary">{{ compra.precio }}</div>
+                      <div class="text-caption text-medium-emphasis">{{ new Date(compra.created_at).toLocaleDateString()
+                      }}</div>
+                    </div>
+                  </template>
+                </v-list-item>
+              </v-list>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -657,10 +727,16 @@
       <div v-else-if="activeView === 'stock-perfumes'" class="view-container">
         <header class="top-header">
           <h1>Stock: Perfumes</h1>
-          <button class="btn-primary" @click="fetchStockData('perfumes')">
-            <v-icon icon="mdi-refresh" size="16" />
-            <span>Actualizar</span>
-          </button>
+          <div class="header-actions">
+            <button class="btn-primary" @click="openStockDialog('perfumes')">
+              <v-icon icon="mdi-plus" size="16" />
+              <span>Nuevo Perfume</span>
+            </button>
+            <button class="btn-warning ml-2" @click="fetchStockData('perfumes')">
+              <v-icon icon="mdi-refresh" size="16" />
+              <span>Actualizar</span>
+            </button>
+          </div>
         </header>
 
         <div class="content-area">
@@ -697,10 +773,16 @@
       <div v-else-if="activeView === 'stock-decants'" class="view-container">
         <header class="top-header">
           <h1>Stock: Decants</h1>
-          <button class="btn-primary" @click="fetchStockData('decants')">
-            <v-icon icon="mdi-refresh" size="16" />
-            <span>Actualizar</span>
-          </button>
+          <div class="header-actions">
+            <button class="btn-primary" @click="openStockDialog('decants')">
+              <v-icon icon="mdi-plus" size="16" />
+              <span>Nuevo Decant</span>
+            </button>
+            <button class="btn-warning ml-2" @click="fetchStockData('decants')">
+              <v-icon icon="mdi-refresh" size="16" />
+              <span>Actualizar</span>
+            </button>
+          </div>
         </header>
 
         <div class="content-area">
@@ -740,10 +822,16 @@
       <div v-else-if="activeView === 'stock-sets'" class="view-container">
         <header class="top-header">
           <h1>Stock: Sets de Perfumes</h1>
-          <button class="btn-primary" @click="fetchStockData('sets')">
-            <v-icon icon="mdi-refresh" size="16" />
-            <span>Actualizar</span>
-          </button>
+          <div class="header-actions">
+            <button class="btn-primary" @click="openStockDialog('sets')">
+              <v-icon icon="mdi-plus" size="16" />
+              <span>Nuevo Set</span>
+            </button>
+            <button class="btn-warning ml-2" @click="fetchStockData('sets')">
+              <v-icon icon="mdi-refresh" size="16" />
+              <span>Actualizar</span>
+            </button>
+          </div>
         </header>
 
         <div class="content-area">
@@ -776,6 +864,53 @@
         </div>
       </div>
 
+      <!-- ==========  VISTA: CUENTA  ========== -->
+      <div v-else-if="activeView === 'cuenta'" class="view-container">
+        <header class="top-header">
+          <h1>Mi Cuenta</h1>
+        </header>
+        <div class="content-area">
+          <v-card class="pa-4" max-width="600">
+            <v-card-title>Editar Perfil</v-card-title>
+            <v-card-text>
+              <v-text-field label="Nombre Completo" v-model="currentUser.full_name" variant="outlined"
+                class="mb-4"></v-text-field>
+              <v-text-field label="Email" v-model="currentUser.email" variant="outlined" readonly disabled
+                class="mb-4"></v-text-field>
+              <v-btn color="primary" block>Guardar Cambios</v-btn>
+            </v-card-text>
+          </v-card>
+        </div>
+      </div>
+
+      <!-- ==========  VISTA: NOTIFICACIONES  ========== -->
+      <div v-else-if="activeView === 'notificaciones'" class="view-container">
+        <header class="top-header">
+          <h1>Notificaciones</h1>
+        </header>
+        <div class="content-area">
+          <v-card class="pa-4" max-width="800">
+            <v-card-title>Configuración de Notificaciones</v-card-title>
+            <v-card-text>
+              <v-list>
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-package-variant"></v-icon>
+                  </template>
+                  <v-list-item-title>Alertas de Stock</v-list-item-title>
+                  <v-list-item-subtitle>Recibe notificaciones en el navegador cuando haya cambios o nuevos items en el
+                    stock.</v-list-item-subtitle>
+                  <template v-slot:append>
+                    <v-switch v-model="stockNotificationsEnabled" color="primary" inset hide-details
+                      @update:model-value="requestNotificationPermission"></v-switch>
+                  </template>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-card>
+        </div>
+      </div>
+
     </div>
 
     <!-- ==========  EVENT CREATION/EDIT DIALOG  ========== -->
@@ -805,9 +940,9 @@
             <v-textarea v-model="eventFormData.description" label="Descripción" variant="outlined" density="compact"
               rows="3"></v-textarea>
 
-            <v-select v-model="eventFormData.procedureId" label="Procedimiento" :items="procedures" item-title="name"
-              item-value="id" variant="outlined" density="compact"
-              :rules="[v => !!v || 'Debe seleccionar un procedimiento']">
+            <v-select v-model="eventFormData.procedureId" label="Tipo de entrega" :items="deliveryOptions"
+              item-title="name" item-value="id" variant="outlined" density="compact"
+              :rules="[v => !!v || 'Debe seleccionar un tipo de entrega']">
               <template v-slot:item="{ props, item }">
                 <v-list-item v-bind="props">
                   <template v-slot:prepend>
@@ -845,8 +980,9 @@
                   :rules="[v => !!v || 'El DNI es requerido']"></v-text-field>
               </v-col>
               <v-col cols="12" sm="6">
-                <v-select v-model="eventFormData.eventReason" label="Razón del Evento" :items="eventReasons"
-                  variant="outlined" density="compact" :rules="[v => !!v || 'La razón es requerida']"></v-select>
+                <v-select v-model="eventFormData.eventReason" label="Tipo de compra" :items="eventReasons"
+                  variant="outlined" density="compact"
+                  :rules="[v => !!v || 'El tipo de compra es requerido']"></v-select>
               </v-col>
             </v-row>
           </v-form>
@@ -915,7 +1051,7 @@
             <div class="detail-row">
               <v-icon icon="mdi-information" class="detail-icon" />
               <div>
-                <div class="detail-label">Razón</div>
+                <div class="detail-label">Tipo de Compra</div>
                 <div class="detail-value">{{ selectedEvent.eventReason }}</div>
               </div>
             </div>
@@ -948,7 +1084,7 @@
           <div class="day-events-list">
             <div v-for="event in selectedDayEvents" :key="event.id" class="day-event-item"
               @click="openEventDetailFromDay(event)">
-              <div class="event-color-indicator" :style="{ backgroundColor: getProcedureColor(event.procedureId) }">
+              <div class="event-color-indicator" :style="{ backgroundColor: event.color || '#3b82f6' }">
               </div>
               <div class="day-event-info">
                 <div class="day-event-time">{{ event.time }}</div>
@@ -1087,52 +1223,73 @@
         </v-card-title>
         <v-card-text>
           <v-form @submit.prevent="saveStock">
-            <!-- Fields for Perfumes -->
+
             <template v-if="currentStockType === 'perfumes'">
               <v-text-field v-model="stockFormData.perfume" label="Nombre del Perfume" variant="outlined"
                 density="compact" class="mb-2"></v-text-field>
-              <v-text-field v-model="stockFormData.precio" label="Precio" variant="outlined" density="compact"
-                class="mb-2"></v-text-field>
-            </template>
 
-            <!-- Fields for Decants -->
-            <template v-if="currentStockType === 'decants'">
-              <v-text-field v-model="stockFormData.nombre" label="Nombre" variant="outlined" density="compact"
-                class="mb-2"></v-text-field>
-              <v-text-field v-model="stockFormData.decants" label="Decants (Info)" variant="outlined" density="compact"
-                class="mb-2"></v-text-field>
               <v-row>
                 <v-col cols="6">
-                  <v-text-field v-model="stockFormData.precio_5ml" label="Precio 5ml" variant="outlined"
-                    density="compact"></v-text-field>
+                  <v-text-field v-model.number="stockFormData.precio" label="Precio (S/)" type="number"
+                    variant="outlined" density="compact"></v-text-field>
                 </v-col>
                 <v-col cols="6">
-                  <v-text-field v-model="stockFormData.precio_10ml" label="Precio 10ml" variant="outlined"
-                    density="compact"></v-text-field>
+                  <v-text-field v-model.number="stockFormData.stock" label="Stock (Unidades)" type="number"
+                    variant="outlined" density="compact"></v-text-field>
                 </v-col>
               </v-row>
             </template>
 
-            <!-- Fields for Sets -->
+            <template v-if="currentStockType === 'decants'">
+              <v-text-field v-model="stockFormData.nombre" label="Nombre" variant="outlined" density="compact"
+                class="mb-2"></v-text-field>
+
+              <v-text-field v-model="stockFormData.decants" label="Decants (Descripción)" variant="outlined"
+                density="compact" class="mb-2"></v-text-field>
+
+              <v-row>
+                <v-col cols="6">
+                  <v-text-field v-model.number="stockFormData.precio_5ml" label="Precio 5ml" type="number"
+                    variant="outlined" density="compact"></v-text-field>
+                </v-col>
+                <v-col cols="6">
+                  <v-text-field v-model.number="stockFormData.precio_10ml" label="Precio 10ml" type="number"
+                    variant="outlined" density="compact"></v-text-field>
+                </v-col>
+              </v-row>
+            </template>
+
             <template v-if="currentStockType === 'sets'">
               <v-text-field v-model="stockFormData.set_de_perfumes" label="Nombre del Set" variant="outlined"
                 density="compact" class="mb-2"></v-text-field>
-              <v-text-field v-model="stockFormData.precio" label="Precio" variant="outlined" density="compact"
-                class="mb-2"></v-text-field>
+
+              <v-row>
+                <v-col cols="6">
+                  <v-text-field v-model.number="stockFormData.precio" label="Precio" type="number" variant="outlined"
+                    density="compact" class="mb-2"></v-text-field>
+                </v-col>
+                <v-col cols="6">
+                  <v-text-field v-model.number="stockFormData.stock" label="Stock" type="number" variant="outlined"
+                    density="compact" class="mb-2"></v-text-field>
+                </v-col>
+              </v-row>
             </template>
 
-            <!-- Common Fields -->
             <v-select v-model="stockFormData.disponibilidad" label="Disponibilidad"
-              :items="['Disponible', 'Agotado', 'Pocos']" variant="outlined" density="compact" class="mt-2"></v-select>
+              :items="['Disponible', 'Agotado', 'Pocos']" variant="outlined" density="compact" class="mt-4"></v-select>
+
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="grey" variant="text" @click="showStockDialog = false">Cancelar</v-btn>
-          <v-btn color="primary" variant="elevated" @click="saveStock">Guardar</v-btn>
+          <v-btn color="primary" variant="elevated" @click="saveStock">
+            {{ editingStockId ? 'Actualizar' : 'Guardar' }}
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
   </div>
 </template>
 
@@ -1187,6 +1344,7 @@ const client = useSupabaseClient()
 const search = ref('')
 const loading = ref(false)
 const contribuyentes = ref<any[]>([])
+const compras = ref<any[]>([])
 
 /* Headers de la tabla - ajusta según tu tabla 'contribuyentes' */
 const headers = ref([
@@ -1197,6 +1355,23 @@ const headers = ref([
   { title: 'Teléfono', key: 'telefono', sortable: true },
   { title: 'Estado', key: 'estado', sortable: true },
   { title: 'Actions', key: 'actions', sortable: false }
+])
+
+const headersCompras = ref([
+  { title: 'ID', key: 'id', sortable: true },
+  { title: 'Fecha', key: 'created_at', sortable: true },
+  { title: 'Nombre', key: 'nombre', sortable: true },
+  { title: 'Apellidos', key: 'apellidos', sortable: true },
+  { title: 'DNI', key: 'dni', sortable: true },
+  { title: 'Teléfono', key: 'numero', sortable: true },
+  { title: 'Red Social', key: 'red_social', sortable: true },
+  { title: 'Productos', key: 'productos_comprados', sortable: true },
+  { title: 'Precio', key: 'precio', sortable: true },
+  { title: 'Categoria', key: 'categoria', sortable: true },
+  { title: 'Cantidad', key: 'cantidad', sortable: true },
+  { title: 'Ciudad', key: 'ciudad/provincia', sortable: true },
+  { title: 'Agencia', key: 'Nombre_agencia_shalom', sortable: true },
+  { title: 'Dirección', key: 'direccion_exacta', sortable: true },
 ])
 
 /* ---------------- Fetch Data from Supabase (con $fetch nativo de Nuxt) ---------------- */
@@ -1217,6 +1392,60 @@ const fetchContribuyentes = async () => {
     loading.value = false
   }
 }
+
+const fetchCompras = async () => {
+  loading.value = true
+  try {
+    const { data, error } = await client
+      .from('comprasBDwppBRADA')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+
+    compras.value = data as any[]
+  } catch (error) {
+    console.error('Error al cargar compras:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Stats para Compras
+const comprasMesActual = computed(() => {
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  return compras.value.filter(c => {
+    const d = new Date(c.created_at)
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+  })
+})
+
+const comprasMesAnterior = computed(() => {
+  const now = new Date()
+  let prevMonth = now.getMonth() - 1
+  let prevYear = now.getFullYear()
+
+  if (prevMonth < 0) {
+    prevMonth = 11
+    prevYear--
+  }
+
+  return compras.value.filter(c => {
+    const d = new Date(c.created_at)
+    return d.getMonth() === prevMonth && d.getFullYear() === prevYear
+  })
+})
+
+const growthPercentage = computed(() => {
+  const current = comprasMesActual.value.length
+  const previous = comprasMesAnterior.value.length
+
+  if (previous === 0) return current > 0 ? 100 : 0
+  return ((current - previous) / previous) * 100
+})
 
 /* ---------------- CRUD Operations ---------------- */
 const editItem = (item: any) => {
@@ -1258,6 +1487,7 @@ const headersPerfumes = [
   { title: 'Perfume', key: 'perfume', sortable: true },
   { title: 'Precio', key: 'precio', sortable: true },
   { title: 'Disponibilidad', key: 'disponibilidad', sortable: true },
+  { title: 'Stock', key: 'stock', sortable: true },
   { title: 'Acciones', key: 'actions', sortable: false },
 ]
 const headersDecants = [
@@ -1272,6 +1502,7 @@ const headersSets = [
   { title: 'Set de Perfumes', key: 'set_de_perfumes', sortable: true },
   { title: 'Precio', key: 'precio', sortable: true },
   { title: 'Disponibilidad', key: 'disponibilidad', sortable: true },
+  { title: 'Stock', key: 'stock', sortable: true },
   { title: 'Acciones', key: 'actions', sortable: false },
 ]
 
@@ -1305,7 +1536,347 @@ async function fetchStockData(type: 'perfumes' | 'decants' | 'sets') {
   }
 }
 
-/* ---------------- Stock CRUD Logic ---------------- */
+/* ---------------- LEADS LOGIC ---------------- */
+const leads = ref<any[]>([])
+const loadingLeads = ref(false)
+const leadsSearch = ref('')
+
+// Headers provided by user: id, nombre, numero, lead_status, reason_ia_qualification, producto_interes
+const headersLeads = ref([
+  { title: 'ID', key: 'id', sortable: true },
+  { title: 'Nombre', key: 'nombre', sortable: true },
+  { title: 'Número', key: 'numero', sortable: true },
+  { title: 'Estado', key: 'lead_status', sortable: true },
+  { title: 'Razón IA', key: 'reason_ia_qualification', sortable: true },
+  { title: 'Interés', key: 'producto_interes', sortable: true },
+])
+
+const fetchLeads = async () => {
+  loadingLeads.value = true
+  try {
+    const { data, error } = await client
+      .from('GeneralBDwppBRADA')
+      .select('*') // We assume created_at exists for stats, otherwise we just fetch what's there
+      .order('id', { ascending: false })
+
+    if (error) throw error
+
+    leads.value = data as any[]
+    console.log('Leads loaded:', data)
+  } catch (error) {
+    console.error('Error loading leads:', error)
+  } finally {
+    loadingLeads.value = false
+  }
+}
+
+// Computed Stats for Leads
+const totalLeads = computed(() => leads.value.length)
+
+const leadsMesActual = computed(() => {
+  const now = new Date()
+  const currentMonth = now.getMonth()
+  const currentYear = now.getFullYear()
+
+  return leads.value.filter(l => {
+    if (!l.created_at) return false // Safety check if created_at is missing
+    const d = new Date(l.created_at)
+    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
+  })
+})
+
+const leadsMesAnterior = computed(() => {
+  const now = new Date()
+  let prevMonth = now.getMonth() - 1
+  let prevYear = now.getFullYear()
+
+  if (prevMonth < 0) {
+    prevMonth = 11
+    prevYear--
+  }
+
+  return leads.value.filter(l => {
+    if (!l.created_at) return false
+    const d = new Date(l.created_at)
+    return d.getMonth() === prevMonth && d.getFullYear() === prevYear
+  })
+})
+
+const leadsGrowthPercentage = computed(() => {
+  const current = leadsMesActual.value.length
+  const previous = leadsMesAnterior.value.length
+
+  if (previous === 0) return current > 0 ? 100 : 0
+  return ((current - previous) / previous) * 100
+})
+
+// Status counts (Case insensitive safety)
+const coldLeadsCount = computed(() => leads.value.filter(l => l.lead_status?.toLowerCase().includes('fri') || l.lead_status?.toLowerCase().includes('frío')).length)
+const warmLeadsCount = computed(() => leads.value.filter(l => l.lead_status?.toLowerCase().includes('tibi')).length)
+const hotLeadsCount = computed(() => leads.value.filter(l => l.lead_status?.toLowerCase().includes('caliente')).length)
+
+const conversionRate = computed(() => {
+  if (totalLeads.value === 0) return 0
+  return (hotLeadsCount.value / totalLeads.value) * 100
+})
+
+const leadsChartSeries = computed(() => {
+  return [{
+    name: 'Leads',
+    data: [coldLeadsCount.value, warmLeadsCount.value, hotLeadsCount.value]
+  }]
+})
+
+const leadsChartOptions = computed<ApexOptions>(() => {
+  return {
+    chart: {
+      type: 'bar',
+      height: 350,
+      fontFamily: 'inherit',
+      toolbar: { show: false },
+      background: 'transparent'
+    },
+    plotOptions: {
+      bar: {
+        borderRadius: 4,
+        horizontal: false,
+        columnWidth: '40%',
+        distributed: true // Colors per column
+      }
+    },
+    colors: ['#3b82f6', '#f59e0b', '#ef4444'], // Blue (Cold), Amber (Warm), Red (Hot)
+    dataLabels: {
+      enabled: false
+    },
+    xaxis: {
+      categories: ['Fríos', 'Tibios', 'Calientes'],
+      labels: {
+        style: {
+          colors: isDark.value ? '#a1a1aa' : '#3f3f46',
+          fontSize: '12px'
+        }
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false }
+    },
+    yaxis: {
+      labels: {
+        style: {
+          colors: isDark.value ? '#a1a1aa' : '#3f3f46',
+        }
+      }
+    },
+    grid: {
+      borderColor: isDark.value ? '#3f3f46' : '#e5e7eb',
+      strokeDashArray: 4,
+    },
+    theme: {
+      mode: isDark.value ? 'dark' : 'light'
+    },
+    legend: { show: false },
+    tooltip: {
+      theme: isDark.value ? 'dark' : 'light'
+    }
+  }
+})
+
+/* ---------------- FACTURACIÓN LOGIC ---------------- */
+
+// Helper para parsear moneda "S/ 1,200.00" -> 1200.00
+const parseCurrency = (val: string | number) => {
+  if (typeof val === 'number') return val
+  if (!val) return 0
+  // Remueve todo excepto números, puntos y signo negativo
+  return parseFloat(val.toString().replace(/[^0-9.-]+/g, '')) || 0
+}
+
+// 1. Ingresos del Mes Actual
+const revenueCurrentMonth = computed(() => {
+  return comprasMesActual.value.reduce((sum, item) => sum + parseCurrency(item.precio), 0)
+})
+
+// 2. Ingresos del Mes Anterior (para comparar tendencia)
+const revenuePreviousMonth = computed(() => {
+  return comprasMesAnterior.value.reduce((sum, item) => sum + parseCurrency(item.precio), 0)
+})
+
+const revenueGrowth = computed(() => {
+  if (revenuePreviousMonth.value === 0) return revenueCurrentMonth.value > 0 ? 100 : 0
+  return ((revenueCurrentMonth.value - revenuePreviousMonth.value) / revenuePreviousMonth.value) * 100
+})
+
+// 3. Cantidad de Ventas (Transacciones)
+const salesCountCurrentMonth = computed(() => comprasMesActual.value.length)
+const salesCountPreviousMonth = computed(() => comprasMesAnterior.value.length)
+const salesGrowth = computed(() => {
+  if (salesCountPreviousMonth.value === 0) return salesCountCurrentMonth.value > 0 ? 100 : 0
+  return ((salesCountCurrentMonth.value - salesCountPreviousMonth.value) / salesCountPreviousMonth.value) * 100
+})
+
+// 4. Ticket Promedio (AOV)
+const averageOrderValue = computed(() => {
+  if (salesCountCurrentMonth.value === 0) return 0
+  return revenueCurrentMonth.value / salesCountCurrentMonth.value
+})
+
+// 5. Tasa de Conversión Real (Leads que compran)
+// Se basa en coincidencia de número de teléfono
+const realConversionRate = computed(() => {
+  if (leads.value.length === 0) return 0
+
+  // Set de teléfonos de personas que han comprado (históricamente)
+  const buyerPhones = new Set(compras.value.map(c => c.numero))
+
+  // Cuántos leads coinciden con ese set
+  const convertedLeads = leads.value.filter(l => buyerPhones.has(l.numero)).length
+
+  return (convertedLeads / leads.value.length) * 100
+})
+
+const convertedLeadsCountReal = computed(() => {
+  const buyerPhones = new Set(compras.value.map(c => c.numero))
+  return leads.value.filter(l => buyerPhones.has(l.numero)).length
+})
+
+
+// --- GRATÍCOS FACTURACIÓN ---
+
+// A. Gráfico de Ingresos Diarios (Mes Actual)
+const revenueChartSeries = computed(() => {
+  // Inicializar días del mes con 0
+  const now = new Date()
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate()
+  const dailyRevenue = new Array(daysInMonth).fill(0)
+
+  comprasMesActual.value.forEach(c => {
+    const d = new Date(c.created_at)
+    const dayIndex = d.getDate() - 1 // 0-indexed
+    if (dayIndex >= 0 && dayIndex < daysInMonth) {
+      dailyRevenue[dayIndex] += parseCurrency(c.precio)
+    }
+  })
+
+  return [{
+    name: 'Ingresos Diarios',
+    data: dailyRevenue
+  }]
+})
+
+const revenueChartOptions = computed<ApexOptions>(() => ({
+  chart: {
+    type: 'area',
+    height: 350,
+    fontFamily: 'inherit',
+    toolbar: { show: false },
+    background: 'transparent'
+  },
+  xaxis: {
+    categories: Array.from({ length: new Date().getDate() }, (_, i) => i + 1), // Solo mostrar hasta el día actual
+    labels: { style: { colors: isDark.value ? '#a1a1aa' : '#3f3f46' } },
+    tooltip: { enabled: false }
+  },
+  yaxis: {
+    labels: { style: { colors: isDark.value ? '#a1a1aa' : '#3f3f46' }, formatter: (val) => `S/ ${val.toFixed(0)}` }
+  },
+  dataLabels: { enabled: false },
+  stroke: { curve: 'smooth', width: 2 },
+  colors: ['#10b981'], // Emerald green
+  grid: { borderColor: isDark.value ? '#3f3f46' : '#e5e7eb', strokeDashArray: 4 },
+  fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.1, stops: [0, 90, 100] } },
+  theme: { mode: isDark.value ? 'dark' : 'light' }
+}))
+
+// B. Gráfico de Conversión (Pie Chart)
+const conversionChartSeries = computed(() => {
+  const converted = convertedLeadsCountReal.value
+  const notConverted = leads.value.length - converted
+  return [converted, notConverted]
+})
+
+const conversionChartOptions = computed<ApexOptions>(() => ({
+  chart: {
+    type: 'donut',
+    fontFamily: 'inherit',
+    background: 'transparent'
+  },
+  labels: ['Compraron', 'No Compraron'],
+  colors: ['#10b981', '#ef4444'], // Green vs Red
+  plotOptions: {
+    pie: {
+      donut: {
+        size: '70%',
+        labels: {
+          show: true,
+          name: { show: true },
+          value: { show: true, color: isDark.value ? '#fff' : '#333' },
+          total: {
+            show: true,
+            label: 'Total Leads',
+            color: isDark.value ? '#a1a1aa' : '#666',
+            formatter: function (w) {
+              return leads.value.length.toString()
+            }
+          }
+        }
+      }
+    }
+  },
+  legend: { position: 'bottom', labels: { colors: isDark.value ? '#a1a1aa' : '#3f3f46' } },
+  stroke: { show: false },
+  theme: { mode: isDark.value ? 'dark' : 'light' }
+}))
+
+// C. Ventas por Categoría
+const salesByCategorySeries = computed(() => {
+  const categories: Record<string, number> = {}
+
+  compras.value.forEach(c => {
+    const cat = c.categoria || 'Sin Categoría'
+    if (!categories[cat]) categories[cat] = 0
+    categories[cat] += parseCurrency(c.precio)
+  })
+
+  return [{
+    name: 'Ventas Totales',
+    data: Object.values(categories)
+  }]
+})
+
+const salesChartCategories = computed(() => {
+  const categories: Record<string, number> = {}
+  compras.value.forEach(c => {
+    const cat = c.categoria || 'Sin Categoría'
+    if (!categories[cat]) categories[cat] = 0
+  })
+  return Object.keys(categories)
+})
+
+const categoryChartOptions = computed<ApexOptions>(() => ({
+  chart: {
+    type: 'bar',
+    height: 350,
+    fontFamily: 'inherit',
+    toolbar: { show: false },
+    background: 'transparent'
+  },
+  plotOptions: {
+    bar: { borderRadius: 4, horizontal: true, barHeight: '50%' }
+  },
+  xaxis: {
+    categories: salesChartCategories.value,
+    labels: { style: { colors: isDark.value ? '#a1a1aa' : '#3f3f46' }, formatter: (val) => `S/ ${Number(val).toFixed(0)}` }
+  },
+  yaxis: {
+    labels: { style: { colors: isDark.value ? '#a1a1aa' : '#3f3f46' } }
+  },
+  colors: ['#3b82f6'],
+  grid: { borderColor: isDark.value ? '#3f3f46' : '#e5e7eb', strokeDashArray: 4 },
+  theme: { mode: isDark.value ? 'dark' : 'light' }
+}))
+
+
+
+/* ---------------- Stock CRUD Logic Corregido ---------------- */
 const showStockDialog = ref(false)
 const currentStockType = ref<'perfumes' | 'decants' | 'sets'>('perfumes')
 const editingStockId = ref<string | null>(null)
@@ -1316,13 +1887,29 @@ function openStockDialog(type: 'perfumes' | 'decants' | 'sets', item?: any) {
   editingStockId.value = item ? item.id : null
 
   if (item) {
-    stockFormData.value = { ...item }
+    // Clonamos el item para no modificar la tabla visualmente antes de guardar
+    stockFormData.value = JSON.parse(JSON.stringify(item))
   } else {
-    // Reset form based on type
+    // Resetear formulario para crear uno nuevo
+    // Inicializamos valores numéricos en 0 o null para evitar strings vacíos
     stockFormData.value = { disponibilidad: 'Disponible' }
-    if (type === 'perfumes') stockFormData.value.perfume = ''
-    else if (type === 'decants') stockFormData.value.nombre = ''
-    else if (type === 'sets') stockFormData.value.set_de_perfumes = ''
+
+    if (type === 'perfumes') {
+      stockFormData.value.perfume = ''
+      stockFormData.value.precio = 0
+      stockFormData.value.stock = 0 // Agregamos stock que faltaba
+    }
+    else if (type === 'decants') {
+      stockFormData.value.nombre = ''
+      stockFormData.value.decants = ''
+      stockFormData.value.precio_5ml = 0
+      stockFormData.value.precio_10ml = 0
+    }
+    else if (type === 'sets') {
+      stockFormData.value.set_de_perfumes = ''
+      stockFormData.value.precio = 0
+      stockFormData.value.stock = 0
+    }
   }
   showStockDialog.value = true
 }
@@ -1330,63 +1917,113 @@ function openStockDialog(type: 'perfumes' | 'decants' | 'sets', item?: any) {
 async function saveStock() {
   const type = currentStockType.value
   let tableName = ''
-  if (type === 'perfumes') tableName = 'brada_perfumes'
-  else if (type === 'decants') tableName = 'brada_decants'
-  else if (type === 'sets') tableName = 'brada_perfume_sets'
+
+  // Función auxiliar: Convierte "S/ 1000" a número puro (1000)
+  // Esto arregla el problema de guardar texto en campos numéricos
+  const cleanPrice = (val: any) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    // Quita "S/", espacios y comas, luego convierte a número
+    return parseFloat(val.toString().replace('S/', '').replace(/,/g, '').trim()) || 0;
+  };
+
+  // 1. Construimos el Payload (datos) EXCLUSIVO para cada tabla
+  // Base común: todos tienen disponibilidad
+  const payload: any = {
+    disponibilidad: stockFormData.value.disponibilidad
+  };
+
+  // 2. Agregamos SOLO las columnas que existen en cada tabla específica
+  if (type === 'perfumes') {
+    tableName = 'brada_perfumes';
+    // Columnas exactas de tu imagen "brada_perfumes"
+    payload.perfume = stockFormData.value.perfume;
+    payload.stock = Number(stockFormData.value.stock || 0);
+    // Tu columna precio es texto, pero guardaremos el número limpio para evitar "S/ S/ 100"
+    payload.precio = cleanPrice(stockFormData.value.precio);
+
+  } else if (type === 'decants') {
+    tableName = 'brada_decants';
+    payload.nombre = stockFormData.value.nombre;
+    payload.decants = stockFormData.value.decants;
+    payload.precio_5ml = cleanPrice(stockFormData.value.precio_5ml);
+    payload.precio_10ml = cleanPrice(stockFormData.value.precio_10ml);
+
+  } else if (type === 'sets') {
+    tableName = 'brada_perfume_sets';
+    payload.set_de_perfumes = stockFormData.value.set_de_perfumes;
+    payload.precio = cleanPrice(stockFormData.value.precio);
+    payload.stock = Number(stockFormData.value.stock || 0);
+  }
 
   try {
-    const payload = { ...stockFormData.value }
-    // Clean up temporary fields if any
-
-    let query = client.from(tableName) as any
-    let error = null
+    const query = client.from(tableName) as any;
+    let result;
 
     if (editingStockId.value) {
-      // Update
-      const { error: updateError } = await query.update(payload).eq('id', editingStockId.value)
-      error = updateError
+      console.log(`Actualizando ${type} con ID:`, editingStockId.value);
+
+      // UPDATE: Usamos el ID tal cual (string UUID)
+      result = await query
+        .update(payload)
+        .eq('id', editingStockId.value)
+        .select()
     } else {
-      // Create - (ID is auto-generated usually, or uuid if needed)
-      // Removing ID just in case it's in payload as null
-      delete payload.id
-      const { error: insertError } = await query.insert(payload)
-      error = insertError
+      console.log(`Creando nuevo ${type}`);
+      // INSERT
+      result = await query
+        .insert(payload)
+        .select()
     }
+
+    const { data, error } = result;
 
     if (error) {
-      console.error('Supabase Error Details:', error)
-      throw error
+      console.error("Error Supabase:", error);
+      alert("Error al guardar: " + error.message);
+    } else {
+      console.log("Guardado exitoso:", data);
+      showStockDialog.value = false;
+      await fetchStockData(type); // Recargar la tabla visual
     }
-
-    showStockDialog.value = false
-    await fetchStockData(type)
-  } catch (error: any) {
-    console.error(`Error saving ${type}:`, error)
-    alert(`Error al guardar: ${error.message || error.details || error}`)
+  } catch (err: any) {
+    console.error("Error inesperado:", err);
+    alert("Error crítico: " + err.message);
   }
 }
 
 async function deleteStock(type: 'perfumes' | 'decants' | 'sets', id: string) {
-  if (!confirm('¿Estás seguro de que deseas eliminar este ítem? Esta acción no se puede deshacer.')) return
+  // Confirmación de seguridad
+  if (!confirm('¿Estás seguro de que deseas eliminar este ítem? Esta acción no se puede deshacer.')) return;
 
-  let tableName = ''
-  if (type === 'perfumes') tableName = 'brada_perfumes'
-  else if (type === 'decants') tableName = 'brada_decants'
-  else if (type === 'sets') tableName = 'brada_perfume_sets'
+  let tableName = '';
+  if (type === 'perfumes') tableName = 'brada_perfumes';
+  else if (type === 'decants') tableName = 'brada_decants';
+  else if (type === 'sets') tableName = 'brada_perfume_sets';
 
   try {
-    console.log(`Deleting from ${tableName} with ID: ${id}`)
-    const { error } = await client.from(tableName).delete().eq('id', id)
+    console.log(`Eliminando de ${tableName} el ID: ${id}`);
+
+    // TRUCO TYPESCRIPT: Usamos 'as any' para poder usar tableName dinámico
+    const query = client.from(tableName) as any;
+
+    // IMPORTANTE: Pasamos 'id' directo (es un string UUID), NO lo convertimos a número
+    const { error } = await query
+      .delete()
+      .eq('id', id);
 
     if (error) {
-      console.error('Supabase Delete Error:', error)
-      throw error
+      console.error('Error Supabase al borrar:', error);
+      throw error;
     }
 
-    await fetchStockData(type)
+    // Si todo sale bien, recargamos la tabla
+    await fetchStockData(type);
+    console.log('Eliminado con éxito');
+
   } catch (error: any) {
-    console.error(`Error deleting from ${tableName}:`, error)
-    alert(`Error al eliminar: ${error.message || error.details || error}`)
+    console.error(`Error deleting from ${tableName}:`, error);
+    alert(`Error al eliminar: ${error.message || error.details || error}`);
   }
 }
 
@@ -1397,7 +2034,51 @@ watch(activeView, (newVal) => {
   if (newVal === 'stock-perfumes' && stockPerfumes.value.length === 0) fetchStockData('perfumes')
   else if (newVal === 'stock-decants' && stockDecants.value.length === 0) fetchStockData('decants')
   else if (newVal === 'stock-sets' && stockSets.value.length === 0) fetchStockData('sets')
+  else if (newVal === 'leads' && leads.value.length === 0) fetchLeads()
 })
+
+/* ---------------- NOTIFICATIONS LOGIC ---------------- */
+const stockNotificationsEnabled = ref(false)
+
+const requestNotificationPermission = async (val: boolean | null) => {
+  if (val === true) {
+    if (!('Notification' in window)) {
+      alert('Tu navegador no soporta notificaciones de escritorio')
+      stockNotificationsEnabled.value = false
+      return
+    }
+
+    if (Notification.permission !== 'granted') {
+      const permission = await Notification.requestPermission()
+      if (permission !== 'granted') {
+        stockNotificationsEnabled.value = false
+      }
+    }
+  }
+}
+
+const triggerStockNotification = (type: string, action: string) => {
+  if (stockNotificationsEnabled.value && Notification.permission === 'granted') {
+    new Notification('Actualización de Stock', {
+      body: `Se ha detectado un cambio (${action}) en el stock de ${type}.`,
+      icon: '/favicon.ico' // O la ruta a tu logo
+    })
+  }
+}
+
+// Watchers simulan detección de cambios.
+// En una app real, esto deberia ser vía Realtime de Supabase, pero aquí detectamos cambios locales tras fetch/edit
+watch(() => stockPerfumes.value.length, (newVal, oldVal) => {
+  if (oldVal > 0 && newVal !== oldVal) triggerStockNotification('Perfumes', newVal > oldVal ? 'Agregado' : 'Eliminado')
+})
+watch(() => stockDecants.value.length, (newVal, oldVal) => {
+  if (oldVal > 0 && newVal !== oldVal) triggerStockNotification('Decants', newVal > oldVal ? 'Agregado' : 'Eliminado')
+})
+watch(() => stockSets.value.length, (newVal, oldVal) => {
+  if (oldVal > 0 && newVal !== oldVal) triggerStockNotification('Sets', newVal > oldVal ? 'Agregado' : 'Eliminado')
+})
+
+
 
 
 /* ---------------- Tema ---------------- */
@@ -1425,7 +2106,9 @@ watch(isDark, applyTheme, { immediate: true })
 
 onMounted(() => {
   applyTheme()
+  applyTheme()
   fetchContribuyentes()
+  fetchCompras()
   handleZoom('one_month')
   loadEventsFromLocalStorage()
   loadProceduresFromLocalStorage()
@@ -1480,8 +2163,7 @@ function logout() {
 const menuItems = [
   { icon: 'mdi-view-dashboard', label: 'Dashboard', id: 'dashboard' },
   { icon: 'mdi-calendar-blank', label: 'Calendario', id: 'calendario' },
-  { icon: 'mdi-account-group', label: 'Pacientes', id: 'pacientes' },
-  { icon: 'mdi-message-reply', label: 'Conversaciones', id: 'conversaciones' },
+  { icon: 'mdi-cart', label: 'Compras', id: 'compras' },
   { icon: 'mdi-chart-box', label: 'Leads', id: 'leads' }
 ]
 
@@ -1490,8 +2172,18 @@ const financiasItems = [
   { icon: 'mdi-chart-line', label: 'Contabilidad', id: 'contabilidad' }
 ]
 
+const chatsItems = [
+  {
+    icon: 'mdi-message-reply',
+    label: 'Conversaciones',
+    id: 'chatwoot',
+    url: 'https://chats.alef.company/app/accounts/8/dashboard'
+  }
+]
+
+
 const documentItems = [
-  { icon: 'mdi-arrow-right-bold-circle', label: 'Procedimientos', id: 'procedimientos' },
+  // { icon: 'mdi-arrow-right-bold-circle', label: 'Procedimientos', id: 'procedimientos' },
   {
     icon: 'mdi-folder',
     label: 'Stock',
@@ -1504,6 +2196,12 @@ const documentItems = [
   },
   { icon: 'mdi-robot-mower', label: 'Meta', id: 'meta' }
 ]
+
+const navigateToChat = (url: string) => {
+  if (url) {
+    window.open(url, '_blank')
+  }
+}
 
 /* ---------------- Stats ---------------- */
 const stats: Stat[] = [
@@ -1694,13 +2392,13 @@ const monthNames = [
 
 
 const eventReasons = [
-  'Consulta General',
-  'Seguimiento',
-  'Emergencia',
-  'Chequeo de Rutina',
-  'Tratamiento',
-  'Evaluación',
-  'Otro'
+  'Perfumes',
+  'Decants',
+  'Sets de perfumes'
+]
+
+const deliveryOptions = [
+  { id: 'domicilio', name: 'Entrega a domicilio', color: '#10b981' }
 ]
 
 /* ---------------- Calendar Computed Properties ---------------- */
@@ -1876,20 +2574,26 @@ function saveEvent() {
     return
   }
 
+  // Look up color based on selected procedureId (Delivery Type)
+  const selectedDelivery = deliveryOptions.find(d => d.id === eventFormData.value.procedureId)
+  const eventColor = selectedDelivery ? selectedDelivery.color : '#3b82f6'
+
   if (editingEvent.value) {
     // Update existing event
     const index = events.value.findIndex(e => e.id === editingEvent.value!.id)
     if (index !== -1) {
       events.value[index] = {
         ...editingEvent.value,
-        ...eventFormData.value
+        ...eventFormData.value,
+        color: eventColor
       }
     }
   } else {
     // Create new event
     const newEvent: CalendarEvent = {
       id: Date.now().toString(),
-      ...eventFormData.value
+      ...eventFormData.value,
+      color: eventColor
     }
     events.value.push(newEvent)
   }

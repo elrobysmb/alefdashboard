@@ -45,10 +45,11 @@
           <v-icon icon="mdi-cog" size="18" />
           <span>Settings</span>
         </button>
-        <button class="footer-item">
+        <a href="https://wa.me/51936196001?text=Hola%20necesito%20soporte" target="_blank" class="footer-item"
+          style="text-decoration: none; color: inherit;">
           <v-icon icon="mdi-help-circle" size="18" />
-          <span>Get Help</span>
-        </button>
+          <span>Contacta con Alef</span>
+        </a>
         <button class="footer-item">
           <v-icon icon="mdi-magnify" size="18" />
           <span>Search</span>
@@ -80,22 +81,18 @@
                 </v-avatar>
               </template>
 
-              <v-list-item-title>Roberto</v-list-item-title>
-              <v-list-item-subtitle>robertoaceresrivas@hotmail.com</v-list-item-subtitle>
+              <v-list-item-title>{{ currentUser.full_name }}</v-list-item-title>
+              <v-list-item-subtitle>{{ currentUser.email }}</v-list-item-subtitle>
             </v-list-item>
 
             <v-divider />
 
-            <v-list-item to="/account" prepend-icon="mdi-account">
-              <v-list-item-title>Account</v-list-item-title>
+            <v-list-item @click="activeView = 'cuenta'" prepend-icon="mdi-account">
+              <v-list-item-title>Cuenta</v-list-item-title>
             </v-list-item>
 
-            <v-list-item to="/billing" prepend-icon="mdi-credit-card">
-              <v-list-item-title>Billing</v-list-item-title>
-            </v-list-item>
-
-            <v-list-item to="/notifications" prepend-icon="mdi-bell">
-              <v-list-item-title>Notifications</v-list-item-title>
+            <v-list-item @click="activeView = 'notificaciones'" prepend-icon="mdi-bell">
+              <v-list-item-title>Notificaciones</v-list-item-title>
             </v-list-item>
 
             <v-divider />
@@ -679,6 +676,41 @@
           </div>
         </div>
       </div>
+
+      <!-- ==========  VISTA: CUENTA  ========== -->
+      <div v-else-if="activeView === 'cuenta'" class="view-container">
+        <header class="top-header">
+          <h1>Mi Cuenta</h1>
+        </header>
+        <div class="content-area">
+          <v-card class="pa-4" max-width="600">
+            <v-card-title>Editar Perfil</v-card-title>
+            <v-card-text>
+              <v-text-field label="Nombre Completo" v-model="currentUser.full_name" variant="outlined"
+                class="mb-4"></v-text-field>
+              <v-text-field label="Email" v-model="currentUser.email" variant="outlined" readonly disabled
+                class="mb-4"></v-text-field>
+              <v-btn color="primary" block>Guardar Cambios</v-btn>
+            </v-card-text>
+          </v-card>
+        </div>
+      </div>
+
+      <!-- ==========  VISTA: NOTIFICACIONES  ========== -->
+      <div v-else-if="activeView === 'notificaciones'" class="view-container">
+        <header class="top-header">
+          <h1>Notificaciones</h1>
+        </header>
+        <div class="content-area">
+          <v-card class="pa-4" max-width="800">
+            <v-card-title>Configuración de Notificaciones</v-card-title>
+            <v-card-text>
+              <p>No hay configuraciones de notificaciones disponibles para este dashboard.</p>
+            </v-card-text>
+          </v-card>
+        </div>
+      </div>
+
     </div>
 
     <!-- ==========  EVENT CREATION/EDIT DIALOG  ========== -->
