@@ -54,7 +54,7 @@ export default defineNuxtConfig({
   app: {
     head: {
       title: "Alef Company",
-      titleTemplate: "%s | Alef Company",
+      titleTemplate: "%s | Dashboard Alef Company",
       link: [
         { rel: "stylesheet", href: "https://rsms.me/inter/inter.css" },
         { rel: "preconnect", href: "https://rsms.me/" },
