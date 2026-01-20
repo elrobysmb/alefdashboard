@@ -1,12 +1,12 @@
 import vuetify, { transformAssetUrls } from "vite-plugin-vuetify";
 
 // PWA Config
-const title = "Vuetify 3 + Nuxt 3 Starter";
-const shortTitle = "Vuetify 3 + Nuxt 3 Starter";
-const description = "Template to get you up and running with Nuxt 3 & Vuetify 3";
-const image = "https://vuetify3nuxt3starter.behonbaker.com/starter.png";
-const url = "https://vuetify3nuxt3starter.behonbaker.com/";
-const author = "Behon Baker";
+const title = "Alef Company";
+const shortTitle = "Alef Company";
+const description = "Dashboard Alef Company";
+const image = "assets/img/Aleflogo.png";
+const url = "https://dashboard.alef.company/";
+const author = "Alef company";
 const themeColor = "#4f46e5";
 
 // https://v3.nuxtjs.org/api/configuration/nuxt.config
